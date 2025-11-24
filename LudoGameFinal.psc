@@ -23,8 +23,8 @@ Algoritmo LudoGame
 	dimension dados[2]
 	dimension fichas[datos_ficha,cantj*4]
 	dimension datos[cantj,estados]
-	dimension tablero[2,32]  // filas: las primeras dos para poder mover las fichas y la tercera un valor fijo que representara la casilla equivalente
-	dimension zonas_de_llegada[(datos_ficha+1)*4,4] //  4 posibles caminitos con 4 casillas cada uno inicializado de forma similar al tablero 
+	dimension tablero[32]  // filas: las primeras dos para poder mover las fichas y la tercera un valor fijo que representara la casilla equivalente
+	dimension zonas_de_llegada[4,4] //  4 posibles caminitos con 4 casillas cada uno inicializado de forma similar al tablero 
 	// cada caminito debe tener spacio para albergar una ficha es decir 2x1
 	//y ademas una fila extra para saber a que matriz dentro de la interfaz grafica corresponde esa casilla especifica 
 	
@@ -72,68 +72,19 @@ Algoritmo LudoGame
 	// el recorrido de una ficha de ludo sin embargo no es lineal y empieza en distintas partes del tablero
 	
 	// Inicializar tablero
-	para i<- 0 hasta 2-1 Hacer
 		para j<-0 hasta 32-1
-			tablero[i,j]<- 0 
+			tablero[j]<- 0 
 		FinPara
-	FinPara
-	tablero[1,0]<-66    // matrices equivalentes para poder mostrarlo en pantalla 
-	tablero[1,1]<-75
-	tablero[1,2]<-76
-	tablero[1,3]<-77
-	tablero[1,4]<-68
-	tablero[1,5]<-59
-	tablero[1,6]<-50
-	tablero[1,7]<-51
-	tablero[1,8]<-52
-	tablero[1,9]<-53
-	tablero[1,10]<-44
-	tablero[1,11]<-35
-	tablero[1,12]<-34
-	tablero[1,13]<-33
-	tablero[1,14]<-32
-	tablero[1,15]<-23
-	tablero[1,16]<-14
-	tablero[1,17]<-5
-	tablero[1,18]<-4
-	tablero[1,19]<-3
-	tablero[1,20]<-12
-	tablero[1,21]<-21
-	tablero[1,22]<-30
-	tablero[1,23]<-29
-	tablero[1,24]<-28
-	tablero[1,25]<-27
-	tablero[1,26]<-36
-	tablero[1,27]<-45
-	tablero[1,28]<-46
-	tablero[1,29]<-47
-	tablero[1,30]<-48
-	tablero[1,31]<-57
-	
+
 	
 	// inicializar zonas de llegada 
-	para i<- 0 hasta 8-1 Hacer
+	para i<- 0 hasta 4-1 Hacer
 		para j<-0 hasta 4-1
 			zonas_de_llegada[i,j]<- 0 
 		FinPara
 	FinPara
-	zonas_de_llegada[1,0]<-67 // zona sur 
-	zonas_de_llegada[1,1]<-58
-	zonas_de_llegada[1,2]<-49
-	zonas_de_llegada[1,3]<-40
-	zonas_de_llegada[3,0]<-13 //zona norte 
-	zonas_de_llegada[3,1]<-22
-	zonas_de_llegada[3,2]<-31
-	zonas_de_llegada[3,3]<-40
-	zonas_de_llegada[5,0]<-43 // derecha 
-	zonas_de_llegada[5,1]<-42
-	zonas_de_llegada[5,2]<-41
-	zonas_de_llegada[5,3]<-40
-	zonas_de_llegada[7,0]<-37 // izquierda 
-	zonas_de_llegada[7,1]<-38
-	zonas_de_llegada[7,2]<-39
-	zonas_de_llegada[7,3]<-40
 	
+
 	
 	
 	//bucle principal-------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -146,12 +97,13 @@ Algoritmo LudoGame
 	turno<-1 
 	mientras juego_terminado <> Verdadero
 		cont_turnos= cont_turnos+1 
+		escribir"turnos jugados: ",cont_turnos
 		si (cont_turnos<> 1) y (( cont_turnos mod 2)==0)
 			turno<-2
 		SiNo
 			turno<-1 
 		FinSi
-		// mostrar tablero
+		mostrar_tablero(tablero)
 		escribir "turno del jugador: ",turno
 		escribir ""
 		escribir "-----presione tecla para lanzar dado-----"
@@ -163,8 +115,7 @@ Algoritmo LudoGame
 		verificar_opcion(opc,datos, tablero, dados, fichas, zonas_de_llegada, turno, cant_fichas,pasos)
 		Esperar Tecla
 		Limpiar Pantalla
-		//mostrar tablero 
-	FinMientras
+	FinMientras	
 	
 FinAlgoritmo
 
@@ -344,35 +295,52 @@ subproceso moverficha( datos,tablero, fichas, zonas_de_llegada, turno, pasos,can
 		segun accion Hacer
 			caso 0: 
 				situacion<-0 
-				actualizar_info(pasos,turno, datos,situacion, casilla_actual)
+				actualizar_info(pasos,turno, datos,situacion, casilla_actual,ficha_elegida,fichas)
 				cambiar_pos(tablero, casilla_actual,pasos)
+				escribir "ficha ",ficha_elegida," en posicion ", casilla_actual +pasos
 				
 			caso 1:  //  mueve la ficha existente en esa casilla a la casa de su jugador y resetea su progreso para luego ejecutar el caso 0 
 				situacion<-1 
-				actualizar_info(pasos,turno, datos,situacion,casilla_actual)
+				actualizar_info(pasos,turno, datos,situacion, casilla_actual,ficha_elegida,fichas)
 				si turno ==1 
-					fichas[0, (tablero[0,casilla_actual+pasos]) mod 10 ]<-tablero[0,casilla_actual+pasos]
+					fichas[0, (tablero[casilla_actual+pasos]) mod 10 ]<-tablero[casilla_actual+pasos]
 				sino 
-					fichas[0, ((tablero[0,casilla_actual+pasos]) mod 10)+4 ]<-tablero[0,casilla_actual+pasos]
+					fichas[0, ((tablero[casilla_actual+pasos]) mod 10)+4 ]<-tablero[casilla_actual+pasos]
 				finsi 
-				tablero[0,casilla_actual+pasos]<-0
+				tablero[casilla_actual+pasos]<-0
 				cambiar_pos(tablero, casilla_actual,pasos)
+				escribir "ficha ",ficha_elegida," en posicion ", casilla_actual+pasos
 				
 			caso 2:   // imprime un mensaje y selcciona otra accion
 				escribir "ya hay una ficha tuya  en esa casilla debes moverla primero" 
 				opc <- mostrar_opciones(datos,dados, turno)
 				verificar_opcion(opc,datos, tablero, dados, fichas, zonas_de_llegada, turno, cant_fichas,pasos)
 				
-			caso 3: //ficha en la meta 
+			caso 3: //ficha en el tramo final 
 				situacion<-3 
-				actualizar_info(pasos, turno,datos,situacion,casilla_actual)
+				actualizar_info(pasos,turno, datos,situacion, casilla_actual,ficha_elegida,fichas)
+				escribir "ficha ",ficha_elegida," en posicion ", casilla_actual +pasos
+				
+			caso 4: // ficha en la meta 
+				situacion<-4 
+				actualizar_info(pasos,turno, datos,situacion, casilla_actual,ficha_elegida,fichas)
+				escribir "ficha ",ficha_elegida," en posicion ", casilla_actual+pasos 
+				
+				
 		FinSegun
 FinSubProceso
 
 
 subproceso cambiar_pos(tablero, casilla_actual,pasos)//____________________________________________________________________________________________________________________
-	tablero[0,casilla_actual+pasos]<-	tablero[0,casilla_actual]			// intercambio de posicion de la ficha elegida
-	tablero[1,casilla_actual]<-0
+	si     (casilla_actual+pasos) >31
+		tablero[(casilla_actual+pasos)-30]<-tablero[casilla_actual]	
+		tablero[casilla_actual]<- 0
+		casilla_actual<- (casilla_actual+pasos)-30
+	sino
+		tablero[casilla_actual+pasos]<-	tablero[casilla_actual]		// intercambio de posicion de la ficha elegida
+		tablero[casilla_actual]<- 0
+		casilla_actual<- casilla_actual+pasos
+	FinSi
 FinSubProceso
 
 
@@ -380,7 +348,7 @@ SubProceso sacar_ficha(opc,datos, tablero, dados, fichas, zonas_de_llegada, turn
 	definir i ,indice como entero
 	i<-0
 	si turno == 1 
-		si tablero[0,0]=0 
+		si tablero[0]=0 
 			si fichas[0,0]<>0 Entonces
 				indice<-0 
 				salir_de_casa(tablero, fichas, indice, turno, cant_fichas)
@@ -409,7 +377,7 @@ SubProceso sacar_ficha(opc,datos, tablero, dados, fichas, zonas_de_llegada, turn
 	finsi 
 	
 	si turno ==2
-		si tablero[0,16]=0
+		si tablero[16]=0
 			si fichas[0,4]<>0 Entonces
 				indice<-4 
 				salir_de_casa(tablero, fichas, indice, turno, cant_fichas)
@@ -443,12 +411,12 @@ FinSubProceso
 
 subproceso salir_de_casa(tablero, fichas, indice, turno, cant_fichas)//____________________________________________________________________________________________________
 	si turno ==1 Entonces
-		tablero[0,0]<-fichas[0,indice]
+		tablero[0]<-fichas[0,indice]
 		fichas[1,indice]<-0
 		fichas[2,indice]<-0
 	SiNo
 		si turno ==2 Entonces
-			tablero[0,16]<-fichas[0,indice]
+			tablero[16]<-fichas[0,indice]
 			fichas[1,indice]<-0
 			fichas[2,indice]<-16
 		FinSi
@@ -458,34 +426,32 @@ FinSubProceso
 
 SubProceso verificar_fichas_disponibles(turno,cantfichas,fichas, arr )//___________________________________________________________________________________________________
 	definir i,j, stop,cant_fichas como entero 
+	j<-0
+	i<-0
 	cant_fichas<-4
 		segun turno
-			caso 1: i <-0 
-				stop <-cant_fichas
-			caso 2: i <- 3 
-				stop <- cant_fichas*2
+			caso 1:
+				para i<-0 hasta 4-1  //fichas disponibles para mover juador 1
+					si fichas[2,i]<> -1 
+						arr[j]<-i+1
+						j<-j+1
+						escribir "ficha",i+1,"(",i+1,")"
+					FinSi
+					finpara 
+			caso 2:
+				para i<-4 hasta 8-1  //fichas disponibles para mover juador 2
+					si fichas[2,i]<> -1 
+						arr[j]<-i-3
+						j<-j+1
+						escribir "ficha",i-3,"(",i-3,")"
+					FinSi
+				finpara 
 		FinSegun
-	j<-0
-		para i<-0 hasta stop -1 
-			si turno == 1
-				escribir "ficha",i+1,"(",i+1,")"  //fichas disponibles para mover juador 1
-				si fichas[2,i]<> 0 
-					arr[j]<-i+1
-					j<-j+1
-				FinSi
-			FinSi 
-			si turno ==2 Entonces
-				escribir "ficha",i-3,"(",i-3,")"   //fichas disponibles para mover juador 2
-				si fichas[2,i]<> 0 
-					arr[j]<-i-3
-					j<-j+1
-				FinSi
-			FinSi
-		finpara 
+
 FinSubProceso
 
 
-subproceso actualizar_info(pasos, turno,datos,situacion, casilla_actual)//_________________________________________________________________________________________________
+subproceso actualizar_info(pasos,turno, datos,situacion, casilla_actual,ficha_elegida,fichas)//______________________________________________________________________________
 	// cada turno se actualizara la posicion de cada ficha en el tablero principal con el indice de columna donde se halla, esa sera su casilla,
 	//ya partir de ahi se planterian las verificaciones 
 	// este dato se econtrara alojado permanentemente en fichas en la posicion en la que se inicializo la ficha para poder hallarla facilmente sin tener que hacer una busqudda 
@@ -522,13 +488,13 @@ funcion val <-validaraccion(turno, pasos,tablero,id, fichas)//__________________
 			si fichas[1, (turno*(id mod 10))-1] >=38  
 				val<-4
 			SiNo
-				si tablero[ 0,casilla_futura] == 0 Entonces
+				si tablero[casilla_futura] == 0 Entonces
 					val<-0 
 				sino 
-					si trunc(tablero[0,casilla_futura]/10) <>  trunc(tablero[0,casilla_actual]/10) 
+					si trunc(tablero[casilla_futura]/10) <>  trunc(tablero[casilla_actual]/10) 
 						val <- 1 
 					sino 
-						si trunc(tablero[0,casilla_futura]/10) ==  trunc(tablero[0,casilla_actual]/10)
+						si trunc(tablero[casilla_futura]/10) ==  trunc(tablero[casilla_actual]/10)
 							val <- 2
 						FinSi
 					FinSi
@@ -541,15 +507,53 @@ FinFuncion
 funcion casilla_actual <-averiguar_pos(tablero,id)//________________________________________________________________________________________________________________________
 	definir casilla_actual,i como entero 
 	para i<-0 hasta 32-1 Hacer
-		si tablero[0,i] == id Entonces
+		si tablero[i] == id Entonces
 			casilla_actual <- i
 		FinSi
 	FinPara
 FinFuncion
 
 
-//SubProceso mostrar_tablero(//activos)//____________________________________________________________________________________________________________________________________
-//FinSubProceso
+SubProceso mostrar_tablero(tablero)//____________________________________________________________________________________________________________________________________
+	// LอNEA 1 A 50: el tablero completo
+    Escribir "                             |จจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจ|"
+    Escribir "                             |                  SIMULADOR DE LUDO               |"
+    Escribir "                             |__________________________________________________|"
+    Escribir ""
+	// CAMINO EXTERNO 38 casillas (dibujado con caracteres)
+	Escribir "         o----------------------------------------------------------------------------------------o"
+	Escribir "         |                                                                                        |"  
+	Escribir "         |                                                                                        |"
+    Escribir "         |                             ___________________________________                        |"
+    Escribir "         |                            |           | ",tablero[19]," | ",tablero[18]," | ",tablero[17]," |           |                       |"
+    Escribir "         |                          | |           |---|---|---|           | |                     |"
+    Escribir "         |                         <| |           | ",tablero[20]," |   | ",tablero[16]," |           | |>                    |"
+    Escribir "         |                        <>| |           |---|   |---|           | |<>                   |"
+    Escribir "         |                       <><| |           | ",tablero[21]," |   | ",tablero[15]," |           | |><>                  |"
+    Escribir "         |                     <> <>| |---------------|   |---------------| |<> <>                |" 
+    Escribir "         |                   <>  <><| | ",tablero[25]," | ",tablero[24]," | ",tablero[23]," | ",tablero[22]," |   | ",tablero[14]," | ",tablero[13]," | ",tablero[12]," | ",tablero[11]," | |><>  <>              |"
+    Escribir "         |                 <>  <> <>| |---------------o   o---------------| |<> <>  <>            |"
+    Escribir "         |              <>  <>  <> <| | ",tablero[26]," |             X             | ",tablero[10]," | |> <>  <>  <>         |"
+    Escribir "         |           <>   <>  <>  <>| |---------------o   o---------------| |<>  <>  <>   <>      |"
+    Escribir "         |              <>  <>  <> <| | ",tablero[27]," | ",tablero[28]," | ",tablero[29]," | ",tablero[30]," |   | ",tablero[6]," | ",tablero[7]," | ",tablero[8]," | ",tablero[9]," | |> <>  <>  <>         |"
+    Escribir "         |                 <>  <> <>| |---------------|   |---------------| |<> <>  <>            |"
+    Escribir "         |                   <>  <><| |           | ",tablero[31]," |   | ",tablero[5]," |           | |><>  <>              |"
+    Escribir "         |                     <> <>| |           |---|   |---|           | |<> <>                |"
+    Escribir "         |                       <><| |           | ",tablero[0]," |   | ",tablero[4]," |           | |><>                  |"
+    Escribir "         |                        <>| |           |---|---|---|           | |<>                   |"
+    Escribir "         |                         <| |           | ",tablero[1]," | ",tablero[2]," | ",tablero[3]," |           | |>                    |"
+	Escribir "         |                        <>| |____________-----------____________| |<>                   |"
+	Escribir "         |                         <|_______________________________________|>                    |"
+	Escribir "         |                        <><><><><><><><><><><><><><><><><><><><><><>                    |"
+	Escribir "         |                                                                                        |"
+	Escribir "         |                                                                                        |"
+	Escribir "         |                                                                                        |"
+	Escribir "         o----------------------------------------------------------------------------------------o"
+    Escribir "                                           "
+    Escribir ""  
+    Escribir "                       ??????? META ???????"
+    Escribir ""  
+FinSubProceso
 
 
 
